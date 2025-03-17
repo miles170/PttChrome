@@ -7,7 +7,7 @@ export const Row = ({
   forceWidth,
   highlighted,
   onHyperLinkMouseOver,
-  onHyperLinkMouseOut
+  onHyperLinkMouseOut,
 }) => (
   <span type="bbsrow" srow={row}>
     {chars
@@ -19,8 +19,8 @@ export const Row = ({
           forceWidth,
           highlighted,
           onHyperLinkMouseOver,
-          onHyperLinkMouseOut
-        )
+          onHyperLinkMouseOut,
+        ),
       )
       .build()}
   </span>

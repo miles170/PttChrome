@@ -10,7 +10,7 @@ export class LinkSegmentBuilder {
     forceWidth,
     highlighted,
     onHyperLinkMouseOver,
-    onHyperLinkMouseOut
+    onHyperLinkMouseOut,
   ) {
     this.row = row;
     this.forceWidth = forceWidth;
@@ -38,7 +38,7 @@ export class LinkSegmentBuilder {
           data-srow={this.row}
           onMouseOver={this.onHyperLinkMouseOver}
           onMouseOut={this.onHyperLinkMouseOut}
-        />
+        />,
       );
       // TODO: Modularize this.
       if (this.inlineLinkPreviews) {
@@ -47,7 +47,7 @@ export class LinkSegmentBuilder {
             key={`${this.col}-${this.href}`}
             request={of(this.href).then(resolveSrcToImageUrl)}
             component={ImagePreviewer.Inline}
-          />
+          />,
         );
       }
     } else {

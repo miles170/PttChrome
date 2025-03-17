@@ -1,12 +1,9 @@
-import { stringify } from "querystring";
 import { decode } from "base58";
 
-const noop = () => {};
-
-export const of = src => Promise.resolve({ src });
+export const of = (src) => Promise.resolve({ src });
 
 export const resolveSrcToImageUrl = ({ src }) =>
-  imageUrlResolvers.find(r => r.test(src)).request(src);
+  imageUrlResolvers.find((r) => r.test(src)).request(src);
 
 export const resolveWithImageDOM = ({ src }) =>
   new Promise((resolve, reject) => {
@@ -14,7 +11,7 @@ export const resolveWithImageDOM = ({ src }) =>
     img.onload = () =>
       resolve({
         src,
-        height: img.height
+        height: img.height,
       });
     img.onerror = reject;
     img.src = src;
@@ -24,7 +21,7 @@ export class ImagePreviewer extends React.PureComponent {
   state = {
     pending: undefined,
     value: undefined,
-    error: undefined
+    error: undefined,
   };
 
   componentDidMount() {
@@ -43,12 +40,12 @@ export class ImagePreviewer extends React.PureComponent {
       return {
         pending: request,
         value: undefined,
-        error: undefined
+        error: undefined,
       };
     });
   }
 
-  handleResolve = value => {
+  handleResolve = (value) => {
     this.setState(({ pending }, { request }) => {
       if (pending !== request) {
         return;
@@ -57,7 +54,7 @@ export class ImagePreviewer extends React.PureComponent {
     });
   };
 
-  handleReject = error => {
+  handleReject = (error) => {
     this.setState(({ pending }, { request }) => {
       if (pending !== request) {
         return;
@@ -72,7 +69,7 @@ export class ImagePreviewer extends React.PureComponent {
       component: undefined,
       request: undefined,
       value: this.state.value,
-      error: this.state.error
+      error: this.state.error,
     });
   }
 }
@@ -105,7 +102,7 @@ ImagePreviewer.OnHover = ({ left, top, value, error }) => {
           top: getTop(top, value.height),
           maxHeight: "80%",
           maxWidth: "90%",
-          zIndex: 2
+          zIndex: 2,
         }}
       />
     );
@@ -117,7 +114,7 @@ ImagePreviewer.OnHover = ({ left, top, value, error }) => {
           position: "absolute",
           left: left + 20,
           top: top,
-          zIndex: 2
+          zIndex: 2,
         }}
       />
     );
@@ -146,13 +143,12 @@ const imageUrlResolvers = [
     },
     request() {
       return Promise.reject(new Error("Unimplemented"));
-    }
-  }
+    },
+  },
 ];
 
-const registerImageUrlResolver = imageUrlResolvers.unshift.bind(
-  imageUrlResolvers
-);
+const registerImageUrlResolver =
+  imageUrlResolvers.unshift.bind(imageUrlResolvers);
 
 registerImageUrlResolver({
   /*
@@ -166,27 +162,29 @@ registerImageUrlResolver({
     const [, flickrBase58Id, flickrPhotoId] = src.match(this.regex);
     const photoId = flickrBase58Id ? decode(flickrBase58Id) : flickrPhotoId;
 
-    const apiURL = `https://api.flickr.com/services/rest/?${stringify({
+    const params = new URLSearchParams({
       method: "flickr.photos.getInfo",
       api_key: "c8c95356e465b8d7398ff2847152740e",
       photo_id: photoId,
       format: "json",
-      nojsoncallback: 1
-    })}`;
+      nojsoncallback: 1,
+    }).toString();
+
+    const apiURL = `https://api.flickr.com/services/rest/?${params}`;
     return fetch(apiURL, {
-      mode: "cors"
+      mode: "cors",
     })
-      .then(r => r.json())
-      .then(data => {
+      .then((r) => r.json())
+      .then((data) => {
         if (!data.photo) {
           throw new Error("Not found");
         }
         const { farm, server: svr, id, secret } = data.photo;
         return {
-          src: `https://farm${farm}.staticflickr.com/${svr}/${id}_${secret}.jpg`
+          src: `https://farm${farm}.staticflickr.com/${svr}/${id}_${secret}.jpg`,
         };
       });
-  }
+  },
 });
 
 registerImageUrlResolver({
@@ -200,9 +198,9 @@ registerImageUrlResolver({
   request(src) {
     const [_, photoId, extension = "jpg"] = this.regex.exec(src);
     return Promise.resolve({
-      src: `https://i.imgur.com/${photoId}.${extension}`
+      src: `https://i.imgur.com/${photoId}.${extension}`,
     });
-  }
+  },
 });
 
 export default ImagePreviewer;

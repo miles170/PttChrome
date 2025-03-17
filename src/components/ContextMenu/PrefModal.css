@@ -6,6 +6,7 @@
 .PrefModal > .modal-dialog {
   height: 90%;
   -webkit-user-select: none;
+  user-select: none;
 }
 
 .PrefModal .modal-content {

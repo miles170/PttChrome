@@ -1,3 +1,3 @@
-import './css/main.css';
-import './css/color.css';
-import './js/main';
+import "./css/main.css";
+import "./css/color.css";
+import "./js/main";

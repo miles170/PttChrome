@@ -1,34 +1,34 @@
-'use strict';
+"use strict";
 
 const KeyMap = {
-  'Backspace': '\b',
-  'Tab': '\t',
-  'Enter': '\r',
-  'Escape': '\x1b',
-  'Home': '\x1b[1~',
-  'Insert': '\x1b[2~',
-  'Delete': '\x1b[3~',
-  'End': '\x1b[4~',
-  'PageUp': '\x1b[5~',
-  'PageDown': '\x1b[6~',
-  'ArrowUp': '\x1b[A',
-  'ArrowDown': '\x1b[B',
-  'ArrowRight': '\x1b[C',
-  'ArrowLeft': '\x1b[D',
+  Backspace: "\b",
+  Tab: "\t",
+  Enter: "\r",
+  Escape: "\x1b",
+  Home: "\x1b[1~",
+  Insert: "\x1b[2~",
+  Delete: "\x1b[3~",
+  End: "\x1b[4~",
+  PageUp: "\x1b[5~",
+  PageDown: "\x1b[6~",
+  ArrowUp: "\x1b[A",
+  ArrowDown: "\x1b[B",
+  ArrowRight: "\x1b[C",
+  ArrowLeft: "\x1b[D",
   // Edge.
-  'Up': '\x1b[A',
-  'Down': '\x1b[B',
-  'Right': '\x1b[C',
-  'Left': '\x1b[D'
+  Up: "\x1b[A",
+  Down: "\x1b[B",
+  Right: "\x1b[C",
+  Left: "\x1b[D",
 };
 let CtrlShiftMap = {
-  '@': 50,
-  '^': 54,
-  '_': 109,
-  '?': 127,
-  '[': 219,
-  '\\': 220,
-  ']': 221
+  "@": 50,
+  "^": 54,
+  _: 109,
+  "?": 127,
+  "[": 219,
+  "\\": 220,
+  "]": 221,
 };
 // A -> 1
 for (let i = 97; i <= 122; i++) {
@@ -59,30 +59,29 @@ export class TermKeyboard {
 
   _checkDB(key) {
     switch (key) {
-      case 'Backspace':
-      case 'ArrowLeft':
+      case "Backspace":
+      case "ArrowLeft":
         return this._checkLeftDB();
-      case 'Delete':
-      case 'ArrowRight':
+      case "Delete":
+      case "ArrowRight":
         return this._checkCurDB();
     }
     return false;
   }
 
   onKeyDown(e) {
-    if (this._onKeyDown(e))
-      e.preventDefault();
+    if (this._onKeyDown(e)) e.preventDefault();
   }
 
   _onKeyDown(e) {
     // Windows/Command key.
-    if (e.getModifierState('Meta')) {
+    if (e.getModifierState("Meta")) {
       return false;
     }
 
     if (!e.ctrlKey && !e.altKey) {
       // Shift-Insert as paste.
-      if (e.shiftKey && e.key == 'Insert') {
+      if (e.shiftKey && e.key == "Insert") {
         return false;
       }
 
@@ -108,9 +107,9 @@ export class TermKeyboard {
       // Remapped keys, which conflict browser shortcuts.
       // Use lowercase no even capslock's on.
       switch (e.key.toLowerCase()) {
-        case 'r':
-        case 't':
-        case 'w':
+        case "r":
+        case "t":
+        case "w":
           // Ctrl+key
           return this._sendCharCode(e.key.toUpperCase().charCodeAt(0) - 64);
       }
@@ -125,7 +124,7 @@ export class TermKeyboard {
     // handled by browsers before keypress.
     if (!e.ctrlKey && !e.altKey && e.key.length == 1) {
       e.preventDefault();
-      return this._send(e.key)
+      return this._send(e.key);
     }
     return false;
   }

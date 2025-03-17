@@ -2,9 +2,9 @@ import {
   parseReplyText,
   parsePushInitText,
   parseReqNotMetText,
-  parseStatusRow
-} from './string_util';
-import { readValuesWithDefault } from '../components/ContextMenu/PrefModal';
+  parseStatusRow,
+} from "./string_util";
+import { readValuesWithDefault } from "../components/ContextMenu/PrefModal";
 
 export function EasyReading(core, view, termBuf) {
   this._core = core;
@@ -14,47 +14,50 @@ export function EasyReading(core, view, termBuf) {
   this._turnPageLines = 22;
 
   this.easyReadingReachedPageEnd = false;
-  this.sendCommandAfterUpdate = '';
+  this.sendCommandAfterUpdate = "";
   this.ignoreOneUpdate = false;
 
   function bindProperty(target, name, obj, prop) {
     if (!prop) prop = name;
     Object.defineProperty(obj, prop, {
-      get: function() { return target[name]; },
-      set: function(val) { target[name] = val; }
+      get: function () {
+        return target[name];
+      },
+      set: function (val) {
+        target[name] = val;
+      },
     });
   }
-  bindProperty(this._view, 'useEasyReadingMode', this, '_enabled');
-  bindProperty(this._termBuf, 'startedEasyReading', this);
-  bindProperty(this._termBuf, 'easyReadingShowReplyText', this);
-  bindProperty(this._termBuf, 'easyReadingShowPushInitText', this);
+  bindProperty(this._view, "useEasyReadingMode", this, "_enabled");
+  bindProperty(this._termBuf, "startedEasyReading", this);
+  bindProperty(this._termBuf, "easyReadingShowReplyText", this);
+  bindProperty(this._termBuf, "easyReadingShowPushInitText", this);
 
-  this._termBuf.addEventListener('change', this._onChanged.bind(this));
-  this._termBuf.addEventListener('viewUpdate', this._onViewUpdated.bind(this));
-};
+  this._termBuf.addEventListener("change", this._onChanged.bind(this));
+  this._termBuf.addEventListener("viewUpdate", this._onViewUpdated.bind(this));
+}
 
-EasyReading.prototype._onChanged = function(e) {
-  console.log("page state: " + this._termBuf.prevPageState + "->" + this._termBuf.pageState);
-  const values = readValuesWithDefault()
+EasyReading.prototype._onChanged = function (e) {
+  const values = readValuesWithDefault();
   // make sure to come back to easy reading mode
-  if (this._termBuf.prevPageState == 2 &&
-      this._termBuf.pageState == 3 &&
-      !this._enabled && 
-      values.enableEasyReading &&
-      this._core.connectedUrl.easyReadingSupported)
-  {
+  if (
+    this._termBuf.prevPageState == 2 &&
+    this._termBuf.pageState == 3 &&
+    !this._enabled &&
+    values.enableEasyReading &&
+    this._core.connectedUrl.easyReadingSupported
+  ) {
     this._enabled = true;
   } else if (!values.enableEasyReading) {
     this._enabled = false;
   }
 
-  if (!this._enabled)
-    return;
+  if (!this._enabled) return;
 
   let lastColNum = this._termBuf.cols - 1;
   let lastRowNum = this._termBuf.rows - 1;
   var lastRowText = this._termBuf.getRowText(lastRowNum, 0, this._termBuf.cols);
-  // dealing with page state jump to 0 because last row wasn't updated fully 
+  // dealing with page state jump to 0 because last row wasn't updated fully
   if (this._termBuf.pageState == 3) {
     this.startedEasyReading = true;
   } else if (this.startedEasyReading && parseReqNotMetText(lastRowText)) {
@@ -65,8 +68,10 @@ EasyReading.prototype._onChanged = function(e) {
     this.startedEasyReading = false;
   }
   if (this.startedEasyReading) {
-    console.log('easy reading cursor pos: ' + this._termBuf.cur_y + ':' + this._termBuf.cur_x);
-    if (this._termBuf.cur_y == lastRowNum && this._termBuf.cur_x == lastColNum) {
+    if (
+      this._termBuf.cur_y == lastRowNum &&
+      this._termBuf.cur_x == lastColNum
+    ) {
       if (this.ignoreOneUpdate) {
         this.ignoreOneUpdate = false;
         return;
@@ -80,16 +85,21 @@ EasyReading.prototype._onChanged = function(e) {
           this.easyReadingReachedPageEnd = false;
           if (!this.sendCommandAfterUpdate) {
             // send page down
-            this.sendCommandAfterUpdate = '\x1b[6~';
+            this.sendCommandAfterUpdate = "\x1b[6~";
           }
         }
-      } else if (!this.easyReadingShowPushInitText) { // only if not showing last row text
+      } else if (!this.easyReadingShowPushInitText) {
+        // only if not showing last row text
         this._termBuf.pageState = 5;
         this.startedEasyReading = false;
       }
     } else if (this._termBuf.cur_y == lastRowNum) {
       if (!this.easyReadingShowPushInitText) {
-        var lastRowText = this._termBuf.getRowText(lastRowNum, 0, this._termBuf.cols);
+        var lastRowText = this._termBuf.getRowText(
+          lastRowNum,
+          0,
+          this._termBuf.cols,
+        );
         var result = parsePushInitText(lastRowText);
         if (result) {
           this.easyReadingShowPushInitText = true;
@@ -99,7 +109,11 @@ EasyReading.prototype._onChanged = function(e) {
         }
       }
     } else if (this._termBuf.cur_y == 22) {
-      var secondToLastRowText = this._termBuf.getRowText(22, 0, this._termBuf.cols);
+      var secondToLastRowText = this._termBuf.getRowText(
+        22,
+        0,
+        this._termBuf.cols,
+      );
       var result = parseReplyText(secondToLastRowText);
       if (result) {
         this.easyReadingShowReplyText = true;
@@ -114,146 +128,137 @@ EasyReading.prototype._onChanged = function(e) {
   }
 };
 
-EasyReading.prototype._onViewUpdated = function(e) {
-  console.log('view update');
+EasyReading.prototype._onViewUpdated = function (e) {
   if (this.sendCommandAfterUpdate) {
-    console.log("send:" + this.sendCommandAfterUpdate);
-    if (this.sendCommandAfterUpdate != 'skipOne') {
+    if (this.sendCommandAfterUpdate != "skipOne") {
       this._send(this.sendCommandAfterUpdate);
     }
-    this.sendCommandAfterUpdate = '';
+    this.sendCommandAfterUpdate = "";
   }
 };
 
-EasyReading.prototype.leaveCurrentPost = function() {
-  console.log('leave curent post');
+EasyReading.prototype.leaveCurrentPost = function () {
   if (!this.easyReadingReachedPageEnd) {
     this.ignoreOneUpdate = true;
   }
   this._termBuf.prevPageState = 0;
 };
 
-EasyReading.prototype.stopEasyReading = function() {
-  console.log('stop easy reading');
-  this.sendCommandAfterUpdate = 'skipOne';
+EasyReading.prototype.stopEasyReading = function () {
+  this.sendCommandAfterUpdate = "skipOne";
 };
 
-EasyReading.prototype._send = function(data) {
+EasyReading.prototype._send = function (data) {
   this._view.conn.send(data);
 };
 
-EasyReading.prototype._onKeyDown = function(e) {
-  if (!this._enabled || !this.startedEasyReading)
-    return;
+EasyReading.prototype._onKeyDown = function (e) {
+  if (!this._enabled || !this.startedEasyReading) return;
 
   this._onKeyDownProcessUI(e);
-  if (e.defaultPrevented)
-    return;
+  if (e.defaultPrevented) return;
 
   var stop = false;
   if (!e.ctrlKey && !e.altKey) {
     switch (e.key) {
-      case 'Backspace':
-      case 'ArrowUp':
-        this._send('\x1b[D\x1b[A\x1b[C');
+      case "Backspace":
+      case "ArrowUp":
+        this._send("\x1b[D\x1b[A\x1b[C");
         stop = true;
         break;
-      case 'ArrowDown':
-        this._send('\x1b[D\x1b[B\x1b[C');
+      case "ArrowDown":
+        this._send("\x1b[D\x1b[B\x1b[C");
         stop = true;
         break;
     }
   } else if (e.ctrlKey && !e.altKey) {
     switch (e.key) {
-      case 'h':
-        this._send('\x1b[D\x1b[A\x1b[C');
+      case "h":
+        this._send("\x1b[D\x1b[A\x1b[C");
         stop = true;
         break;
     }
   }
-  if (stop)
-    e.preventDefault();
+  if (stop) e.preventDefault();
 };
 
-EasyReading.prototype._scrollBy = function(lines) {
+EasyReading.prototype._scrollBy = function (lines) {
   var cont = this._view.mainDisplay;
-  if (lines < 0 && cont.scrollTop == 0)
-    return false;
-  if (lines > 0 && cont.scrollTop >=
-    this._view.mainContainer.clientHeight -
-      this._view.chh * this._termBuf.rows)
+  if (lines < 0 && cont.scrollTop == 0) return false;
+  if (
+    lines > 0 &&
+    cont.scrollTop >=
+      this._view.mainContainer.clientHeight -
+        this._view.chh * this._termBuf.rows
+  )
     return false;
   cont.scrollTop += this._view.chh * lines;
   return true;
 };
 
-EasyReading.prototype._scrollEnd = function() {
+EasyReading.prototype._scrollEnd = function () {
   this._view.mainDisplay.scrollTop = this._view.mainContainer.clientHeight;
   return true;
 };
 
-EasyReading.prototype._scrollTop = function() {
+EasyReading.prototype._scrollTop = function () {
   this._view.mainDisplay.scrollTop = 0;
   return true;
 };
 
-EasyReading.prototype._onKeyDownProcessUI = function(e) {
+EasyReading.prototype._onKeyDownProcessUI = function (e) {
   var stop = false;
   if (!e.ctrlKey && !e.altKey) {
     switch (e.key) {
-      case 'Backspace':
+      case "Backspace":
         stop = this._scrollBy(-this._turnPageLines);
-        if (!stop)
-          this.leaveCurrentPost();
+        if (!stop) this.leaveCurrentPost();
         break;
-      case 'ArrowRight':
-      case ' ':
-      case 't':
+      case "ArrowRight":
+      case " ":
+      case "t":
         stop = this._scrollBy(this._turnPageLines);
-        if (!stop)
-          this.leaveCurrentPost();
+        if (!stop) this.leaveCurrentPost();
         break;
-      case 'PageUp':
+      case "PageUp":
         this._scrollBy(-this._turnPageLines);
         stop = true;
         break;
-      case 'PageDown':
+      case "PageDown":
         this._scrollBy(this._turnPageLines);
         stop = true;
         break;
-      case 'ArrowLeft':
+      case "ArrowLeft":
         this.stopEasyReading();
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         stop = this._scrollBy(-1);
-        if (!stop)
-          this.leaveCurrentPost();
+        if (!stop) this.leaveCurrentPost();
         break;
-      case 'Enter':
-      case 'ArrowDown':
+      case "Enter":
+      case "ArrowDown":
         stop = this._scrollBy(1);
-        if (!stop)
-          this.leaveCurrentPost();
+        if (!stop) this.leaveCurrentPost();
         break;
-      case 'k':
+      case "k":
         this._scrollBy(-1);
         stop = true;
         break;
-      case 'j':
+      case "j":
         this._scrollBy(1);
         stop = true;
         break;
-      case 'Home':
-      case '0':
-      case 'g':
+      case "Home":
+      case "0":
+      case "g":
         stop = this._scrollTop();
         break;
-      case 'End':
-      case '$':
-      case 'G':
+      case "End":
+      case "$":
+      case "G":
         stop = this._scrollEnd();
         break;
-      case 'Tab':
+      case "Tab":
         stop = true;
         break;
       default:
@@ -268,18 +273,17 @@ EasyReading.prototype._onKeyDownProcessUI = function(e) {
     }
   } else if (e.ctrlKey && !e.altKey) {
     switch (e.key) {
-      case 'f':
+      case "f":
         this._scrollBy(this._turnPageLines);
         stop = true;
         break;
-      case 'b':
+      case "b":
         this._scrollBy(-this._turnPageLines);
         stop = true;
         break;
-      case 'h':
+      case "h":
         stop = this._scrollBy(-this._turnPageLines);
-        if (!stop)
-          this.leaveCurrentPost();
+        if (!stop) this.leaveCurrentPost();
         break;
       default:
         if ("@^_?".indexOf(e.key) >= 0) {
@@ -288,13 +292,11 @@ EasyReading.prototype._onKeyDownProcessUI = function(e) {
         }
     }
   }
-  if (stop)
-    e.preventDefault();
+  if (stop) e.preventDefault();
 };
 
-EasyReading.prototype._onMouseClick = function(e) {
-  if (!this._enabled || !this.startedEasyReading)
-    return;
+EasyReading.prototype._onMouseClick = function (e) {
+  if (!this._enabled || !this.startedEasyReading) return;
   var stop = false;
   // XXX Should not use term buffer to track mouse cursor.
   switch (this._termBuf.mouseCursor) {
@@ -332,6 +334,5 @@ EasyReading.prototype._onMouseClick = function(e) {
     default: // Do nothing
       break;
   }
-  if (stop)
-    e.preventDefault();
+  if (stop) e.preventDefault();
 };

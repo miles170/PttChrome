@@ -1,40 +1,38 @@
-import React from "react";
-import { compose, lifecycle } from "recompose";
+import React, { useEffect } from "react";
 import { Alert, Button, Fade } from "react-bootstrap";
 import { i18n } from "../js/i18n";
 import "./PageTopAlert.css";
 
-const enhance = compose(
-  lifecycle({
-    componentDidMount() {
-      this.handler = e => {
-        if (e.keyCode == 13) {
-          this.props.onDismiss();
-        }
-        // Kills everything becase we don't want any further action performed under ConnectionAlert status
-        event.preventDefault();
-        event.stopImmediatePropagation();
-      };
-      window.addEventListener("keydown", this.handler, true);
-    },
-    componentWillUnmount() {
-      window.removeEventListener("keydown", this.handler, true);
-    }
-  })
-);
+const ConnectionAlert = ({ onDismiss }) => {
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.keyCode === 13) {
+        onDismiss();
+      }
+      // Kills everything because we don't want any further action performed under ConnectionAlert status
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    };
+    window.addEventListener("keydown", handler, true);
 
-export const ConnectionAlert = ({ onDismiss }) => (
-  <Fade in>
-    <Alert bsStyle="danger" className="PageTopAlert" onDismiss={onDismiss}>
-      <h4>{i18n("alert_connectionHeader")}</h4>
-      <p>{i18n("alert_connectionText")}</p>
-      <p>
-        <Button bsStyle="danger" onClick={onDismiss}>
-          {i18n("alert_connectionReconnect")}
-        </Button>
-      </p>
-    </Alert>
-  </Fade>
-);
+    return () => {
+      window.removeEventListener("keydown", handler, true);
+    };
+  }, [onDismiss]);
 
-export default enhance(ConnectionAlert);
+  return (
+    <Fade in>
+      <Alert bsStyle="danger" className="PageTopAlert" onDismiss={onDismiss}>
+        <h4>{i18n("alert_connectionHeader")}</h4>
+        <p>{i18n("alert_connectionText")}</p>
+        <p>
+          <Button bsStyle="danger" onClick={onDismiss}>
+            {i18n("alert_connectionReconnect")}
+          </Button>
+        </p>
+      </Alert>
+    </Fade>
+  );
+};
+
+export default ConnectionAlert;

@@ -1,17 +1,17 @@
 export function Event() {}
 
-Event.mixin = function(obj) {
+Event.mixin = function (obj) {
   for (var key in Event.prototype) {
     obj[key] = Event.prototype[key];
   }
 };
 
-Event.prototype.addEventListener = function(type, listener) {
+Event.prototype.addEventListener = function (type, listener) {
   this._listeners = this._listeners || {};
   (this._listeners[type] = this._listeners[type] || []).push(listener);
 };
 
-Event.prototype.dispatchEvent = function(e) {
+Event.prototype.dispatchEvent = function (e) {
   this._listeners = this._listeners || {};
   var fns = this._listeners[e.type];
   if (fns) {
@@ -22,7 +22,7 @@ Event.prototype.dispatchEvent = function(e) {
   }
 };
 
-Event.prototype.removeEventListener = function(type, listener) {
+Event.prototype.removeEventListener = function (type, listener) {
   this._listeners = this._listeners || {};
   var fns = this._listeners[type];
   if (fns) {

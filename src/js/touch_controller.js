@@ -9,39 +9,40 @@ export function TouchController(app) {
 
   this.ham = null;
   this.setupHandlers();
-};
+}
 
-TouchController.prototype.setupHandlers = function() {
+TouchController.prototype.setupHandlers = function () {
   var self = this;
   var app = this.app;
 
-  document.body.ontouchmove = function(e) { 
+  document.body.ontouchmove = function (e) {
     if (e.touches.length != 1) return false;
     return true;
   };
 
-  document.body.ontouchstart = function(e) {
+  document.body.ontouchstart = function (e) {
     self.touchStarted = true;
     app.inputArea.blur();
-    console.log('touchstart');
   };
 
-  document.body.ontouchend = function(e) {
-    if (app.buf.pageState == 2 && app.buf.highlightCursor &&
-        app.buf.nowHighlight != -1) {
+  document.body.ontouchend = function (e) {
+    if (
+      app.buf.pageState == 2 &&
+      app.buf.highlightCursor &&
+      app.buf.nowHighlight != -1
+    ) {
       app.onMouse_click(self.touchedCenter.x, self.touchedCenter.y);
       app.buf.nowHighlight = -1;
       app.buf.highlightCursor = self.highlightCopy;
-      app.BBSWin.style.cursor = 'auto';
+      app.BBSWin.style.cursor = "auto";
       self.touchStarted = false;
       app.inputArea.focus();
     }
-    console.log('touchend');
   };
 
   this.ham = new Hammer(app.BBSWin);
-  this.ham.on('pan', function(ev) {
-    if (ev.pointerType == 'touch') {
+  this.ham.on("pan", function (ev) {
+    if (ev.pointerType == "touch") {
       //console.log(ev);
       if (app.buf.pageState == 2) {
         ev.preventDefault();
@@ -56,21 +57,20 @@ TouchController.prototype.setupHandlers = function() {
     }
   });
 
-  this.ham.on('tap', function(ev) {
+  this.ham.on("tap", function (ev) {
     //console.log(ev);
     ev.preventDefault();
     ev.srcEvent.stopPropagation();
     ev.srcEvent.preventDefault();
-    if (ev.pointerType != 'touch')  return; 
+    if (ev.pointerType != "touch") return;
     self.highlightCopy = app.buf.highlightCursor;
     app.buf.highlightCursor = false;
     app.onMouse_move(ev.center.x, ev.center.y);
     app.onMouse_click(ev.center.x, ev.center.y);
     app.buf.nowHighlight = -1;
     app.buf.highlightCursor = self.highlightCopy;
-    app.BBSWin.style.cursor = 'auto';
+    app.BBSWin.style.cursor = "auto";
     self.touchStarted = false;
     app.inputArea.focus();
-    console.log('touchtap');
   });
 };
